@@ -1,0 +1,25 @@
+{
+  "manifest_version": 2,
+  "name": "Gitter Chrome extension",
+  "description": "A tiny Gitter client for Chrome browser",
+  "version": "0.1.0",
+
+  "browser_action": {
+    "default_icon": "build/images/icon.png",
+    "default_popup": "build/index.html",
+    "default_title": "Gitter"
+  },
+
+  "background": {
+    "persistent": true,
+    "scripts": [ "build/js/background.js" ]
+  },
+
+  "content_security_policy": "script-src 'self' https://*.gitter.im; object-src 'self'",
+
+  "permissions": [
+    "background",
+    "https://*.gitter.im/*",
+    "webRequest"
+  ]
+}

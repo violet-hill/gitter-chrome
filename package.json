@@ -1,0 +1,14 @@
+{
+  "name": "gitter-chrome",
+  "version": "0.1.0",
+  "description": "just for npm",
+
+  "devDependencies": {
+    "gulp": "~3.8.10",
+    "gulp-concat": "~2.4.2",
+    "gulp-jade": "~0.10.0",
+    "gulp-react": "~2.0.0",
+    "gulp-sourcemaps": "~1.2.8",
+    "sqwish": "~0.2.2"
+  }
+}

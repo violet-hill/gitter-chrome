@@ -1,0 +1,25 @@
+{
+  "name": "gitter",
+  "version": "0.1.0",
+  "authors": [
+    "Sergey Pchelintsev <mail@sergeyp.me>"
+  ],
+  "description": "A chrome extention for Gitter",
+  "keywords": [
+    "gitter"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "faye": "~1.0.1",
+    "lodash": "~2.4.1",
+    "ratchet": "~2.0.2",
+    "react": "~0.12.1"
+  }
+}
