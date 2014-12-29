@@ -1,0 +1,40 @@
+html, body {
+  width: 600px;
+  margin: 0;
+  padding: 0;
+  overflow-x: scroll;
+  min-height: 400px;
+}
+
+a {
+  color: #7b8086;
+  font-style: none;
+
+  &:hover {
+    color: #428bca;
+  }
+}
+
+.room-card {
+  cursor: pointer;
+
+  .user {
+    display: inline-block;
+    font-size: 10pt;
+    text-align: center;
+    width: 100px;
+
+    .user-name {
+      display: block;
+    }
+  }
+
+  .messages {
+    margin: 0;
+    margin-left: 10px;
+    font-size: 12pt;
+    display: inline-block;
+    vertical-align: top;
+    width: 400px;
+  }
+}

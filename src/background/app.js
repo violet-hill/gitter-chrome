@@ -1,75 +1,52 @@
-var GitterClient = function(token) {
-  this.token = token;
-  var faye = this.faye = new Faye.Client('https://ws.gitter.im/faye', {timeout: 60, retry: 5, interval: 1});
-  faye.addExtension({
-    outgoing: function(message, callback) {
-      if(!message.ext) { message.ext = {}; }
-      message.ext.token = token;
-      callback(message);
-    }
-  });
+GitterClient = function(token) {
+  var apiClient = this.apiClient = new ApiClient(token);
+  this.rooms = [];
+
+  apiClient.getRooms().then(function(rooms) {
+    var promises = _.map(rooms, function(room) {
+      return this.addRoom(room);
+    }.bind(this));
+
+    Q.all(promises).then(function() {
+      this.triggerUpdate();
+    }.bind(this));
+  }.bind(this));
+
+  apiClient.getMe().then(function(user) {
+    this.user = user;
+    apiClient.subRooms(user.id, function(room, operation) {
+      if(operation == "create") {
+        this.addRoom(room).then(function() {
+          this.triggerUpdate();
+        }.bind(this));
+      } else if(operation == "remove") {
+        this.removeRoom(room);
+      }
+
+    }.bind(this));
+  }.bind(this));
 }
 
-GitterClient.prototype.jsonRequest = function(path, callback) {
-  var xhr = new XMLHttpRequest();
-  xhr.onload = function() { callback(xhr); }
-  xhr.open("GET", "https://api.gitter.im/v1/" + path);
-  xhr.setRequestHeader("Accept", "application/json")
-  xhr.setRequestHeader("Authorization", "Bearer " + this.token);
-  xhr.send();
+GitterClient.prototype.addRoom = function(room) {
+  var promise = this.apiClient.getRecentMessages(room.id);
+  return promise.then(function(messages) {
+    var item = new Room(room, messages);
+    this.rooms.push(item);
+  }.bind(this));
 }
 
-GitterClient.prototype.getChatMessages = function(roomId, limit, callback) {
-  var path = "rooms/" + roomId + "/chatMessages?limit=" + limit;
-  this.jsonRequest(path, function(xhr) {
-    var chatMessages = JSON.parse(xhr.responseText);
-    callback(chatMessages);
-  });
+GitterClient.prototype.removeRoom = function(room) {
+  var i = _.findIndex(this.rooms, function(candidate) { return candidate.id == room.id; });
+  this.rooms.splice(i, 1);
+  this.triggerUpdate();
 }
 
-GitterClient.prototype.subscribe = function(roomId, callback) {
-  var faye = this.faye;
-
-  this.getChatMessages(roomId, 50, function(messages) {
-    callback(messages, "init");
-
-    faye.subscribe('/api/v1/rooms/' + roomId + '/chatMessages', function(response) {
-      var operation = response.operation, message = response.model;
-      if((operation == "update") && (message.text == "")) operation = "delete";
-      callback([message], operation);
-    }, {});
-  });
+GitterClient.prototype.onRoomEvent = function(room, event, data) {}
+GitterClient.prototype.onUpdate = _.noop;
+GitterClient.prototype.triggerUpdate = function() { this.onUpdate(this.rooms); }
+GitterClient.prototype.setUpdate = function(callback) {
+  this.onUpdate = callback;
+  this.triggerUpdate();
 }
 
-GitterClient.prototype.onRoomUpdates = function(callback) {
-  var client = this, histories = [];
-
-  var handler = function() {
-    var heads = [], i = 0, historyLength = histories.length;
-    for(; i < historyLength; i++) {
-      var head = histories[i].head();
-      if(head) heads.push(head);
-    }
-
-    callback(heads);
-  }
-
-  this.jsonRequest("rooms", function(xhr) {
-    var rooms = JSON.parse(xhr.responseText);
-
-    _.each(rooms, function(room) {
-      var history = new ChatHistory(room);
-
-      client.subscribe(room.id, function(messages, action) {
-        history.change(messages, action);
-        handler();
-      });
-
-      histories.push(history);
-    });
-
-    handler();
-  });
-}
-
-var client = new GitterClient(secret.token);
+window.client = new GitterClient(secret.token);
