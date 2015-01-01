@@ -27,26 +27,38 @@ GitterClient = function(token) {
   }.bind(this));
 }
 
-GitterClient.prototype.addRoom = function(room) {
-  var promise = this.apiClient.getRecentMessages(room.id);
-  return promise.then(function(messages) {
-    var item = new Room(room, messages);
-    this.rooms.push(item);
-  }.bind(this));
-}
+_.tap(GitterClient.prototype, function(proto) {
+  proto.addRoom = function(info) {
+    var promise = this.apiClient.getRecentMessages(info.id);
+    return promise.then(function(messages) {
+      var room = new Room(info, messages);
 
-GitterClient.prototype.removeRoom = function(room) {
-  var i = _.findIndex(this.rooms, function(candidate) { return candidate.id == room.id; });
-  this.rooms.splice(i, 1);
-  this.triggerUpdate();
-}
+      this.apiClient.subMessages(room.id, function(message, operation) {
+        room.updateMessages(message, operation);
+        this.triggerUpdate();
+      }.bind(this));
 
-GitterClient.prototype.onRoomEvent = function(room, event, data) {}
-GitterClient.prototype.onUpdate = _.noop;
-GitterClient.prototype.triggerUpdate = function() { this.onUpdate(this.rooms); }
-GitterClient.prototype.setUpdate = function(callback) {
-  this.onUpdate = callback;
-  this.triggerUpdate();
-}
+      this.rooms.push(room);
+    }.bind(this));
+  }
+
+  proto.removeRoom = function(room) {
+    var i = _.findIndex(this.rooms, function(candidate) { return candidate.id == room.id; });
+    this.apiClient.unsubMessages(room.id);
+    this.rooms.splice(i, 1);
+    this.triggerUpdate();
+  }
+
+  proto.onRoomEvent = function(room, event, data) {}
+  proto.onUpdate = _.noop;
+  proto.triggerUpdate = function() {
+    this.rooms.sort(function(a, b) { return a.isOlderThan(b) ? 1 : -1; });
+    this.onUpdate(this.rooms, this.user);
+  }
+  proto.setUpdate = function(callback) {
+    this.onUpdate = callback;
+    this.triggerUpdate();
+  }
+});
 
 window.client = new GitterClient(secret.token);

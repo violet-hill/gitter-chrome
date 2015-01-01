@@ -1,40 +1,104 @@
+@activeLink: #2980b9;
+
 html, body {
   width: 600px;
   margin: 0;
   padding: 0;
   overflow-x: scroll;
   min-height: 400px;
+  font: 'Open Sans', HelveticaNeue, sans-serif;
+}
+
+.hide {
+  display: none !important;
 }
 
 a {
-  color: #7b8086;
+  color: @activeLink;
   font-style: none;
 
   &:hover {
-    color: #428bca;
+    font-style: underline;
   }
 }
 
-.room-card {
-  cursor: pointer;
+.about {
+  .brand {
+    padding-left: 3px;
+    font-size: 14px;
+  }
+}
 
+.room-cards {
+  margin: 0;
+  margin-top: 44px;
+}
+
+.room-card {
   .user {
     display: inline-block;
     font-size: 10pt;
     text-align: center;
     width: 100px;
 
+    .user-avatar {
+      max-height: 60px;
+      max-width: 60px;
+    }
+
     .user-name {
       display: block;
     }
   }
 
-  .messages {
+  .summary {
+    position: relative;
     margin: 0;
     margin-left: 10px;
-    font-size: 12pt;
     display: inline-block;
     vertical-align: top;
     width: 400px;
+  }
+
+  .info {
+    .room-name {
+    }
+
+    .icon {
+      font-size: 12pt;
+      display: inline-block;
+      margin: 0 5px;
+
+      &.icon-person:before {
+        padding-right: 3px;
+      }
+    }
+
+    .topic {
+      display: block;
+      font-size: 9pt;
+    }
+
+    .topic-toggler {
+      color: #bbb;
+    }
+  }
+
+  .messages {
+    cursor: pointer;
+    margin-top: 10px;
+    font-size: 12pt;
+    min-height: 60px;
+  }
+
+  .footer {
+    margin-top: 10px;
+    text-align: right;
+
+    .updated-at {
+      font-size: 10pt;
+      color: #333;
+      font-style: italic;
+    }
   }
 }

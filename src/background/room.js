@@ -1,36 +1,59 @@
 var Room = function(info, messages) {
-  this.messages = _.sortBy(messages, function(message) {
-    return -1 * new Date(message.sent).getTime();
-  });
-  _.extend(this, _.pick(info, 'id', 'name', 'userCount', 'unreadItems'));
-  this.topic = info.topic ? (info.name + " - " + info.topic) : info.name;
+  this.buffer = messages;
+  _.extend(this, _.pick(info, 'id', 'name', 'topic', 'userCount', 'unreadItems'));
   this.url = "https://gitter.im" + info.url;
-  this.updateStat();
+  this.updateInfo();
 }
 
-Room.prototype.isEmpty = function() {
-  return this.messages.length == 0;
-}
+_.tap(Room.prototype, function(proto) {
+  proto.isEmpty = function() {
+    return this.messages.length == 0;
+  }
 
-Room.prototype.updateStat = function() {
-  var stat = this.stat = { user: {}, messages: [], time: null };
+  proto.updateInfo = function() {
+    this.user = {}, this.messages = [], this.updatedAt = null;
 
-  if(_.isEmpty(this.messages)) return;
+    if(this.buffer.length == 0) return;
 
-  var headMessage = _.head(this.messages);
-  stat.user.id = headMessage.fromUser.id;
-  stat.user.name = headMessage.fromUser.displayName;
-  stat.user.nickname = headMessage.fromUser.username;
-  stat.user.url = "https://github.com" + headMessage.fromUser.url;
-  stat.user.avatar = headMessage.fromUser.avatarUrlSmall;
-  stat.messages.push(headMessage.html);
-  _(this.messages).tail().each(function(message) {
-    if(message.fromUser.id != stat.user.id) return false;
-    // compose last 3 messages
-    if(stat.messages.length > 2) return false;
-    // deleted messages
-    if(message.html !== "") stat.messages.push(message.html);
-  });
-  stat.messages.reverse();
-  stat.time = new Date(headMessage.sent);
-}
+    this.buffer = _.sortBy(this.buffer, function(message) { return -1 * new Date(message.sent).getTime(); });
+    // leave only the last 10 messages in a buffer
+    this.buffer = _.first(this.buffer, 10);
+
+    var headMessage = _.head(this.buffer);
+    this.user.id = headMessage.fromUser.id;
+    this.user.name = headMessage.fromUser.displayName;
+    this.user.nickname = headMessage.fromUser.username;
+    this.user.url = "https://github.com" + headMessage.fromUser.url;
+    this.user.avatar = headMessage.fromUser.avatarUrlSmall;
+
+    this.messages.push(headMessage.html);
+    _(this.buffer).tail().each(function(message) {
+      if(message.fromUser.id != this.user.id) return false;
+      // compose last 3 messages
+      if(this.messages.length > 2) return false;
+      // deleted messages
+      if(message.html !== "") this.messages.push(message.html);
+    }.bind(this));
+
+    this.messages.reverse();
+    this.updatedAt = new Date(headMessage.sent);
+  }
+
+  proto.updateMessages = function(message, operation) {
+    if(operation == "update") {
+      var i = _.pluck(this.buffer, 'id').indexOf(message.id);
+      if(i == -1) return;
+      this.buffer.splice(i, 1, message);
+    } else if(operation == "create") {
+      this.buffer.splice(0, 0, message);
+    }
+    this.updateInfo()
+  }
+
+  proto.isOlderThan = function(otherRoom) {
+    var other = otherRoom.updatedAt;
+    if(this.updatedAt && other) return this.updatedAt.getTime() < other.getTime();
+  }
+});
+
+
