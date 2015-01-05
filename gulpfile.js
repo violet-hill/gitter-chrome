@@ -17,6 +17,7 @@ gulp.task("javascript", ['react-components'], function() {
     "bower_components/lodash/dist/lodash.js",
     "node_modules/q/q.js",
     "src/background/api-client.js",
+    "src/background/gitter-client.js",
     "src/background/room.js",
     "src/background/dev-env.js",
     "src/background/app.js"
@@ -29,7 +30,8 @@ gulp.task("javascript", ['react-components'], function() {
     "bower_components/lodash/dist/lodash.js",
     "bower_components/ratchet/dist/js/ratchet.js",
     "bower_components/react/react.js",
-    "build/components/*.js"
+    "build/components/*.js",
+    "src/popup/app.js"
     ]).pipe(sourcemaps.init())
     .pipe(concat('popup.js'))
     .pipe(sourcemaps.write())

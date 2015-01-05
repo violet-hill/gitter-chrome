@@ -5,7 +5,6 @@ html, body {
   margin: 0;
   padding: 0;
   overflow-x: scroll;
-  min-height: 400px;
   font: 'Open Sans', HelveticaNeue, sans-serif;
 }
 
@@ -16,6 +15,7 @@ html, body {
 a {
   color: @activeLink;
   font-style: none;
+  outline: 0;
 
   &:hover {
     font-style: underline;
@@ -24,8 +24,16 @@ a {
 
 .about {
   .brand {
-    padding-left: 3px;
     font-size: 14px;
+
+    &:before {
+      font-size: 26px;
+      padding-right: 3px;
+    }
+
+    a {
+      padding-left: 3px;
+    }
   }
 }
 

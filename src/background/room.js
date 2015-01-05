@@ -10,6 +10,11 @@ _.tap(Room.prototype, function(proto) {
     return this.messages.length == 0;
   }
 
+  proto.isOlderThan = function(otherRoom) {
+    var other = otherRoom.updatedAt;
+    if(this.updatedAt && other) return this.updatedAt.getTime() < other.getTime();
+  }
+
   proto.updateInfo = function() {
     this.user = {}, this.messages = [], this.updatedAt = null;
 
@@ -48,11 +53,6 @@ _.tap(Room.prototype, function(proto) {
       this.buffer.splice(0, 0, message);
     }
     this.updateInfo()
-  }
-
-  proto.isOlderThan = function(otherRoom) {
-    var other = otherRoom.updatedAt;
-    if(this.updatedAt && other) return this.updatedAt.getTime() < other.getTime();
   }
 });
 
